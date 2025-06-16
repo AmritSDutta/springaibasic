@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generative Models Timeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #2d1b69 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .container {
+            min-width: 2800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            color: #b8c6db;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .timeline-container {
+            position: relative;
+            height: 600px;
+            margin: 40px 0;
+        }
+
+        .timeline-axis {
+            position: absolute;
+            bottom: 50px;
+            left: 100px;
+            right: 100px;
+            height: 4px;
+            background: linear-gradient(to right, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 2px;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .year-marker {
+            position: absolute;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .year-tick {
+            position: absolute;
+            bottom: 46px;
+            width: 2px;
+            height: 12px;
+            background: #ffd700;
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: absolute;
+            bottom: 70px;
+            transform: translateX(-50%);
+            opacity: 0;
+            animation: slideUp 0.8s forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .model-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            width: 200px;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .model-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .model-card::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border: 15px solid transparent;
+            border-top-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .model-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .model-description {
+            display: none;
+        }
+
+        .model-type {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .type-early { background: linear-gradient(45deg, #ff9a9e, #fecfef); color: #000; }
+        .type-gan { background: linear-gradient(45deg, #a8edea, #fed6e3); color: #000; }
+        .type-vae { background: linear-gradient(45deg, #ffecd2, #fcb69f); color: #000; }
+        .type-flow { background: linear-gradient(45deg, #667eea, #764ba2); color: #fff; }
+        .type-diffusion { background: linear-gradient(45deg, #f093fb, #f5576c); color: #fff; }
+        .type-transformer { background: linear-gradient(45deg, #4facfe, #00f2fe); color: #000; }
+        .type-energy { background: linear-gradient(45deg, #43e97b, #38f9d7); color: #000; }
+
+        .connection-dot {
+            position: absolute;
+            bottom: 48px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: translateX(-50%) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translateX(-50%) scale(1.3);
+                opacity: 0.8;
+            }
+        }
+
+        .stacked-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 60px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+        }
+
+        .scroll-hint {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+            color: #b8c6db;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                min-width: 2000px;
+            }
+
+            .model-card {
+                width: 160px;
+                padding: 12px;
+            }
+
+            .model-name {
+                font-size: 1.1rem;
+            }
+
+            .model-description {
+                font-size: 0.8rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Evolution of Generative Models</h1>
+        <p>A comprehensive horizontal timeline of breakthrough generative AI models</p>
+    </div>
+
+    <div class="timeline-container">
+        <!-- Timeline axis -->
+        <div class="timeline-axis"></div>
+
+        <!-- Year markers -->
+        <div class="year-marker" style="left: 100px;">1986</div>
+        <div class="year-tick" style="left: 100px;"></div>
+
+        <div class="year-marker" style="left: 200px;">1990</div>
+        <div class="year-tick" style="left: 200px;"></div>
+
+        <div class="year-marker" style="left: 400px;">2000</div>
+        <div class="year-tick" style="left: 400px;"></div>
+
+        <div class="year-marker" style="left: 600px;">2010</div>
+        <div class="year-tick" style="left: 600px;"></div>
+
+        <div class="year-marker" style="left: 800px;">2013</div>
+        <div class="year-tick" style="left: 800px;"></div>
+
+        <div class="year-marker" style="left: 1000px;">2015</div>
+        <div class="year-tick" style="left: 1000px;"></div>
+
+        <div class="year-marker" style="left: 1200px;">2017</div>
+        <div class="year-tick" style="left: 1200px;"></div>
+
+        <div class="year-marker" style="left: 1400px;">2018</div>
+        <div class="year-tick" style="left: 1400px;"></div>
+
+        <div class="year-marker" style="left: 1600px;">2020</div>
+        <div class="year-tick" style="left: 1600px;"></div>
+
+        <div class="year-marker" style="left: 1900px;">2022</div>
+        <div class="year-tick" style="left: 1900px;"></div>
+
+        <div class="year-marker" style="left: 2200px;">2023</div>
+        <div class="year-tick" style="left: 2200px;"></div>
+
+        <div class="year-marker" style="left: 2500px;">2024</div>
+        <div class="year-tick" style="left: 2500px;"></div>
+
+        <!-- Timeline items -->
+        <div class="timeline-item" style="left: 100px; animation-delay: 0.1s;">
+            <div class="model-card">
+                <div class="model-name">Boltzmann Machines</div>
+                <div class="model-description">Early probabilistic generative model using energy-based learning for pattern recognition.</div>
+                <div class="model-type type-early">Early Model</div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #ff9a9e, #fecfef);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 480px; animation-delay: 0.2s;">
+            <div class="model-card">
+                <div class="model-name">Energy-Based Models</div>
+                <div class="model-description">Formalized framework for learning probability distributions through energy functions.</div>
+                <div class="model-type type-energy">Energy Model</div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #43e97b, #38f9d7);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 800px; animation-delay: 0.3s;">
+            <div class="model-card">
+                <div class="model-name">Variational Autoencoders</div>
+                <div class="model-description">Combined neural networks with variational inference for smooth latent spaces.</div>
+                <div class="model-type type-vae">VAE</div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #ffecd2, #fcb69f);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 850px; animation-delay: 0.4s;">
+            <div class="stacked-items">
+                <div class="model-card">
+                    <div class="model-name">GANs</div>
+                    <div class="model-description">Revolutionary two-player game between generator and discriminator networks.</div>
+                    <div class="model-type type-gan">GAN</div>
+                </div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #a8edea, #fed6e3);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 950px; animation-delay: 0.5s;">
+            <div class="stacked-items">
+                <div class="model-card">
+                    <div class="model-name">DCGAN</div>
+                    <div class="model-description">First stable GAN architecture using convolutional layers for high-resolution images.</div>
+                    <div class="model-type type-gan">GAN</div>
+                </div>
+                <div class="model-card">
+                    <div class="model-name">Normalizing Flows</div>
+                    <div class="model-description">Invertible networks transforming simple to complex distributions.</div>
+                    <div class="model-type type-flow">Flow Model</div>
+                </div>
+                <div class="model-card">
+                    <div class="model-name">Early Diffusion</div>
+                    <div class="model-description">Iterative denoising process for generation.</div>
+                    <div class="model-type type-diffusion">Diffusion</div>
+                </div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #a8edea, #fed6e3);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 1200px; animation-delay: 0.6s;">
+            <div class="stacked-items">
+                <div class="model-card">
+                    <div class="model-name">CycleGAN</div>
+                    <div class="model-description">Unpaired image-to-image translation using cycle consistency.</div>
+                    <div class="model-type type-gan">GAN</div>
+                </div>
+                <div class="model-card">
+                    <div class="model-name">Transformer</div>
+                    <div class="model-description">Self-attention mechanism revolutionizing sequence modeling.</div>
+                    <div class="model-type type-transformer">Transformer</div>
+                </div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #4facfe, #00f2fe);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 1400px; animation-delay: 0.7s;">
+            <div class="model-card">
+                <div class="model-name">StyleGAN</div>
+                <div class="model-description">Style-based generation producing photorealistic faces with controllable attributes.</div>
+                <div class="model-type type-gan">GAN</div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #a8edea, #fed6e3);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 1500px; animation-delay: 0.8s;">
+            <div class="model-card">
+                <div class="model-name">GPT-2</div>
+                <div class="model-description">Large-scale language model with emergent few-shot learning capabilities.</div>
+                <div class="model-type type-transformer">Transformer</div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #4facfe, #00f2fe);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 1600px; animation-delay: 0.9s;">
+            <div class="stacked-items">
+                <div class="model-card">
+                    <div class="model-name">DDPM</div>
+                    <div class="model-description">Refined diffusion process with improved training stability.</div>
+                    <div class="model-type type-diffusion">Diffusion</div>
+                </div>
+                <div class="model-card">
+                    <div class="model-name">GPT-3</div>
+                    <div class="model-description">175B parameter model with remarkable language understanding.</div>
+                    <div class="model-type type-transformer">Transformer</div>
+                </div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #f093fb, #f5576c);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 1750px; animation-delay: 1.0s;">
+            <div class="stacked-items">
+                <div class="model-card">
+                    <div class="model-name">CLIP</div>
+                    <div class="model-description">Contrastive learning connecting vision and language.</div>
+                    <div class="model-type type-transformer">Transformer</div>
+                </div>
+                <div class="model-card">
+                    <div class="model-name">DALL-E</div>
+                    <div class="model-description">First large-scale text-to-image transformer model.</div>
+                    <div class="model-type type-transformer">Transformer</div>
+                </div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #4facfe, #00f2fe);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 1900px; animation-delay: 1.1s;">
+            <div class="stacked-items">
+                <div class="model-card">
+                    <div class="model-name">Stable Diffusion</div>
+                    <div class="model-description">Open-source latent diffusion making high-quality generation accessible.</div>
+                    <div class="model-type type-diffusion">Diffusion</div>
+                </div>
+                <div class="model-card">
+                    <div class="model-name">DALL-E 2</div>
+                    <div class="model-description">Improved text-to-image with CLIP guidance and diffusion.</div>
+                    <div class="model-type type-diffusion">Diffusion</div>
+                </div>
+                <div class="model-card">
+                    <div class="model-name">ChatGPT</div>
+                    <div class="model-description">Conversational AI with reinforcement learning from human feedback.</div>
+                    <div class="model-type type-transformer">Transformer</div>
+                </div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #f093fb, #f5576c);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 2200px; animation-delay: 1.2s;">
+            <div class="stacked-items">
+                <div class="model-card">
+                    <div class="model-name">GPT-4</div>
+                    <div class="model-description">Multimodal large language model with enhanced reasoning.</div>
+                    <div class="model-type type-transformer">Transformer</div>
+                </div>
+                <div class="model-card">
+                    <div class="model-name">Midjourney V5</div>
+                    <div class="model-description">Advanced diffusion with exceptional photorealism and artistic control.</div>
+                    <div class="model-type type-diffusion">Diffusion</div>
+                </div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #4facfe, #00f2fe);"></div>
+        </div>
+
+        <div class="timeline-item" style="left: 2500px; animation-delay: 1.3s;">
+            <div class="model-card">
+                <div class="model-name">Sora</div>
+                <div class="model-description">Text-to-video diffusion model generating minute-long videos with complex scenes.</div>
+                <div class="model-type type-diffusion">Diffusion</div>
+            </div>
+            <div class="connection-dot" style="background: linear-gradient(45deg, #f093fb, #f5576c);"></div>
+        </div>
+    </div>
+
+    <div class="scroll-hint">
+        ← Scroll horizontally to explore the timeline →
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color type-early"></div>
+            <span>Early Models</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color type-energy"></div>
+            <span>Energy Models</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color type-vae"></div>
+            <span>VAE</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color type-gan"></div>
+            <span>GAN</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color type-flow"></div>
+            <span>Flow Models</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color type-diffusion"></div>
+            <span>Diffusion</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color type-transformer"></div>
+            <span>Transformer</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

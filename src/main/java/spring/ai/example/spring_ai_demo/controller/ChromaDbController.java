@@ -10,12 +10,13 @@ import java.util.List;
 
 @RestController
 public class ChromaDbController {
-    private final VectorStore vectorStore;
+    private final VectorStore vectorStore; // gateway to vector DB
     public ChromaDbController( VectorStore vectorStore) {
         this.vectorStore = vectorStore;
     }
     @GetMapping("/ai/chroma")
-    public List<Document> query(@RequestParam(value = "message", defaultValue = "tasty wine") String message) {
+    public List<Document> query(@RequestParam(value = "message",
+            defaultValue = "tasty wine") String message) {
         return this.vectorStore
                 .similaritySearch(
                         SearchRequest.builder()
@@ -27,8 +28,10 @@ public class ChromaDbController {
     }
     @GetMapping("/ai/chroma/meta")
     public List<Document> queryWithMeta(
-            @RequestParam(value = "search_query", defaultValue = "tasty wine") String message,
-            @RequestParam(value = "meta_query", defaultValue = "Grizzly Peak") String meta_query
+            @RequestParam(value = "search_query",
+                    defaultValue = "tasty wine") String message,
+            @RequestParam(value = "meta_query",
+                    defaultValue = "Grizzly Peak") String meta_query
     ) {
         return vectorStore.similaritySearch(
                 SearchRequest.builder()

@@ -16,24 +16,36 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-class MyController {
+class ChatController {
     private final VectorStore vectorStore;
     private final ChatClient chatClient;
 
-    public MyController(VectorStore vectorStore, ChatClient.Builder chatClientBuilder) {
+    public ChatController(VectorStore vectorStore,
+                          ChatClient.Builder chatClientBuilder) {
 
-        ChatMemory chatMemory = MessageWindowChatMemory.builder().maxMessages(5).build();
+        ChatMemory chatMemory = MessageWindowChatMemory.builder()
+                .maxMessages(5)
+                .build();
         this.vectorStore = vectorStore;
-        this.chatClient = chatClientBuilder.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build()).build();
+        this.chatClient = chatClientBuilder.defaultAdvisors(
+                MessageChatMemoryAdvisor
+                        .builder(chatMemory)
+                        .build()
+        ).build();
     }
 
-    @GetMapping("/ai")
-    String generation(@RequestParam(value = "message", defaultValue = "What day is today?") String userInput,
-                      @RequestParam(value = "conversationId", defaultValue = "001") String conversationId) {
+    @GetMapping("/ai/wine_explore")
+    String generation(@RequestParam(value = "message",
+                              defaultValue = "What wine do you suggest me?")
+                      String userInput,
+                      @RequestParam(value = "conversationId",
+                              defaultValue = "001")
+                      String conversationId) {
         return this.chatClient.prompt()
                 .user(userInput)
-                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
-                .tools(new WineTool(this.vectorStore))
+                .advisors(a ->
+                        a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .tools(new WineTool(this.vectorStore)) // Access to vector store
                 .call()
                 .content();
     }
@@ -47,10 +59,20 @@ class WineTool {
     }
 
 
-    @Tool(name = "WineQuery", description = "Get the wine related details. Takes query string as input.")
-    public List<Document> wineQuery(@ToolParam(description = "wine related query string") String query) {
+    @Tool(name = "WineQuery",
+            description = "Get the wine related details" +
+                    ". Takes query string as input.")
+    public List<Document> wineQuery(
+            @ToolParam(description = "wine related query string")
+            String query) {
+
         return this.vectorStore
-                .similaritySearch(SearchRequest.builder().query(query).topK(3).build());
+                .similaritySearch(
+                        SearchRequest.builder()
+                                .query(query)
+                                .topK(3)
+                                .build()
+                );
 
     }
 

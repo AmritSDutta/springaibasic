@@ -21,7 +21,7 @@ repositories {
 }
 
 ext {
-	set('springAiVersion', "1.1.0-SNAPSHOT")
+	set('springAiVersion', "1.1.0")
 }
 
 dependencies {
@@ -34,6 +34,8 @@ dependencies {
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation 'org.eclipse.californium:californium-core:3.14.0'
+
 }
 
 dependencyManagement {

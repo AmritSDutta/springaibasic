@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 class ChatController {
@@ -35,7 +36,7 @@ class ChatController {
     }
 
     @GetMapping("/ai/wine_explore")
-    String generation(@RequestParam(value = "message",
+    WineDetails generation(@RequestParam(value = "message",
                               defaultValue = "What wine do you suggest me?")
                       String userInput,
                       @RequestParam(value = "conversationId",
@@ -47,9 +48,10 @@ class ChatController {
                         a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .tools(new WineTool(this.vectorStore)) // Access to vector store
                 .call()
-                .content();
+                .entity(WineDetails.class);
     }
 }
+record WineDetails(List<Map<String, String>> wines) {}
 
 class WineTool {
     private final VectorStore vectorStore;
